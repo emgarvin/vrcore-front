@@ -10,82 +10,67 @@
 	<title>UCL VR Core</title>
 	<style type="text/css">
 	*{font-family:'Lato',sans-serif;}
-	html,body,div,ul,li,form,h1,h2,h3,h4,h5,h6{position:relative;margin:0;padding:0;background:transparent;color:#222;list-style-type:none;}
-	html{background:#252d57;}
+	html,body,div,ul,li,form,h1,h2,h3,h4,h5,h6{margin:0;padding:0;background:transparent;color:#222;list-style-type:none;}
+	body{height:100%;}
+	html{background:#3b1301;height:100%;width:100%;overflow:auto;}
 	a,a:hover{text-decoration:none;cursor:pointer;}
 	a{color:#252d57;}
 	a:hover{color:#404f9c;border-bottom:1px dotted #404f9c;}
 	input,input:hover,input:active{outline:none;outline:0;background:transparent;border:none;padding:2px 6px;margin:0;cursor:pointer;}
-	input[type="text"],input[type="password"]{display:block;background-color:#c2ccff;border-radius:10px;height:28px;width:300px;text-align:center;font-size:18px;}
+	input[type="text"],input[type="password"]{display:block;background-color:#ff834e;border-radius:10px;height:28px;width:200px;text-align:center;font-size:18px;}
 	input[type="submit"]{display:block;border:1px solid #252d57;border-radius:10px;height:28px;width:110px;text-align:center;font-size:18px;margin:0 0 25px 0;}
-	#wrapper{max-width:450px;background:#fff;margin:40px auto;padding:15px 35px;border-radius:15px;}
-	#headerlinks li{float:left;padding:0 25px 0 0;}
+	#wrapper{max-width:800px;height:100%;background:#fff;margin:0 auto;padding:15px 35px;border-radius:8px;overflow:auto;}
+	#headerlinks ul{float:right;width:60%;margin:0 auto;}
+	#headerlinks li{float:left;padding:0 25px 0 0;text-align:center;}
 	#headerlinks li a{line-height:34px;font-size:16px;padding:0 0 6px 0;}
 	#headerlinks{overflow:auto;}
 	h2{margin:25px 0 10px 0;display:block;border-bottom:1px solid #252d57;padding:0 0 8px 0;}
-	form{display:block;border-bottom:1px solid #252d57;}
+	form{display:block;border-bottom:1px solid #252d57;clear:both;}
 	label{font-size:12px;line-height:24px;margin:0 0 15px 0;display:block;}
-	#resultframe{background:#c2ccff;border:1px solid #252d57;padding:6px 20px;margin:15px 0;}
-	#targetframe{overflow:auto;border-bottom:1px solid #252d57;}
+	#resultframe{background:#c2ccff;border:1px solid #252d57;padding:6px 20px;margin:15px 0;clear:both;}
+	#targetframe{overflow:auto;border-bottom:1px solid #252d57;display:block;float:left;clear:both;width:90%;}
 	#target,#upload,#convert,#hideframe{height:1px;width:1px;position:absolute;left:-10000px;}
 	.status_filename,.status_status{float:left;display:block;font-size:12px;line-height:18px;margin:0 0 8px 0;}
 	.status_filename{clear:left;width:300px;}
 	.status_status{}
+	#logo{text-indent:-10000px;background-image:url(vrcore-logo.svg);background-size:contain;background-repeat:no-repeat;background-position:center center;width:40%;float:left;margin:0 20px 0 0;}
+	#overwrapper{height:100%;width:100%;background:#fff;background-image:url(vrcore-logo.svg);background-size:contain;background-repeat:no-repeat;background-position:center center;z-index:500;position:absolute;top:0;left:0;}
+	.auth{display:none;}
 	</style>
-</head>
-<body>
-
-<div id="wrapper">
-
-<h1>VR Core</h1>
-
-<div id="resultframe">
-	no result.
-</div>
-
-<ul id="headerlinks">
-	<li><a class="act" href="javascript:s('login');">Login</a></li>
-	<li><a class="act" href="javascript:s('register');">Register</a></li>
-	<li><a class="act" href="javascript:convertstart();">Convert New Video</a></li>
-	<li><a class="act" href="javascript:checkstatus();">Check Status</a></li>
-</ul>
-
-<form id="login" method="post" action="/uclvr/index.html" onsubmit="loginprocess();return false;">
-	<h2>Login</h2>
-	<label>Username<input type="text" name="uname" id="uname1"></label>
-	<label>Password<input type="password" name="password" id="password"></label>
-	<input type="submit" value="Log In">
-</form>
-
-<form id="register" method="post" action="/uclvr/index.html" onsubmit="registerprocess();return false;">
-	<h2>Register</h2>
-	<label>Username<input type="text" name="uname" id="uname2"></label>
-	<label>Email<input type="text" name="email" id="email"></label>
-	<label>Password<input type="password" name="password1" id="password1"></label>
-	<label>Repeat Password<input type="password" name="password2" id="password2"></label>
-	<input type="submit" value="Finish">
-</form>
-
-<form id="convert" method="post" target="hideframe" action="http://uclvrcore1.cloudapp.net/uclvr/upload/" enctype="multipart/form-data">
-	<input type="file" name="target" id="target" onchange="$('#upload').click();">
-	<input type="submit" id="upload" value="Upload">
-</form>
-
-<span id="authstatus" class="h">no</span>
-<div id="targetframe" class="h"></div>
-<iframe id="hideframe" name="hideframe" onload="hideframechange();"></iframe>
-
-</div>
 
 <script>
 jQuery.get("/uclvr/auth/?uname=azureuser&password=UCLvrcore",function(data){if(data.indexOf("success")){$("#authstatus").html("yes");}});
 var i;
+var changestatus=false;
 
 $(document).ready(function(){
-	$("form").hide();
-	$(".h").hide();
-	$("#resultframe").hide();
+	$("#overwrapper").delay(2000).fadeOut("fast");
+	$("hideframe").ready(function(){if(changestatus){hideframechange();}});
+	$("form").hide();$(".h").hide();$("#resultframe").hide();
+	logowidth();
+	$("#registerusername").keyup(function(){
+		$("#registerusername").val($("#registerusername").val().replace(/[^a-zA-Z0-9\.]+/g,""));
+		if($("#registerusername").val().length>30){$("#registerusername").val($("#registerusername").val().substring(0,30));}
+	});
+	$("#registerpassword").keyup(function(){
+		$("#registerpassword").val($("#registerpassword").val().replace(/[^a-zA-Z0-9\.]+/g,""));
+		if($("#registerpassword").val().length>30){$("#registerpassword").val($("#registerpassword").val().substring(0,30));}
+	});
+	$("#registeremail").keyup(function(){
+		$("#registeremail").val($("#registeremail").val().replace(/[^a-zA-Z0-9\.@]+/g,""));
+		if($("#registeremail").val().length>30){$("#registeremail").val($("#registeremail").val().substring(0,30));}
+	});
+	$("#registeremail").change(function(){
+		var et=/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+		if(!et.test($("#registeremail").val())){$("#resultframe").html("Please enter a valid email address.").show("slow").delay(3000).hide("slow");}
+	});
 });
+
+$(window).resize(function(){logowidth();});
+
+function logowidth(){
+	$("#logo").css("height",($("#logo").width()/2.5));
+}
 
 function h(){
 	$("form").hide("slow");
@@ -100,24 +85,6 @@ function s(n){
 function resultshow(){
 	h();
 	$("#resultframe").show("slow").delay(3000).hide("slow");
-}
-
-function loginprocess(){
-	if($("#uname1").val().length>0){
-		$("#resultframe").html("Login successful as "+$("#uname1").val()+".");
-	}else{
-		$("#resultframe").html("Login failed.");
-	}
-	resultshow();
-}
-
-function registerprocess(){
-	if($("#uname2").val().length>0){
-		$("#resultframe").html("Registration has been processed for "+$("#uname2").val()+".");
-	}else{
-		$("#resultframe").html("Registration failed.");
-	}
-	resultshow();
 }
 
 function downloading(){
@@ -160,6 +127,81 @@ function checkstatus(){
 	});
 }
 
+function processlogin(){
+	jQuery.get("/uclvr/auth/?uname="+$("#loginusername").val()+"&password="+$("#loginpassword").val(),function(r){
+		if(r.indexOf("authentication succeded")>0){
+			h();
+			$("#resultframe").html("Welcome back, "+$("#loginusername").val()).show("slow").delay(3000).hide("slow");
+			$(".noauth").hide();
+			$(".auth").show();
+		}else{
+			$("#resultframe").html("Login failed. Incorrect username or password.").show("slow").delay(3000).hide("slow");
+		}
+	});
+}
+
+function logout(){
+	$(".noauth").show();
+	$(".auth").hide();
+	h();
+}
+
+function processregister(){
+	if(!($("#registerpassword").val()==$("#registerpasswordconfirm").val())){$("#resultframe").html("Your passwords do not match.").show("slow").delay(3000).hide("slow");}else{
+		jQuery.get("/uclvr/register/?uname="+$("#registerusername").val()+"&password="+$("#registerpassword").val()+"&email="+$("#registeremail").val(),function(r){
+				h();
+				$("#resultframe").html("Welcome to VRCore").show("slow").delay(3000).hide("slow");
+		});
+	}
+}
 </script>
+
+</head>
+<body>
+<div id="overwrapper">&nbsp;</div>
+<div id="wrapper">
+<h1 id="logo">VR Core252d57</h1>
+
+<ul id="headerlinks">
+	<li><a class="act noauth" href="javascript:s('login');">Login</a></li>
+	<li><a class="act noauth" href="javascript:s('register');">Register</a></li>
+	<li><a class="act" href="javascript:checkstatus();">Contact</a></li>
+	<li><a class="act auth" href="javascript:convertstart();">Convert New Video</a></li>
+	<li><a class="act auth" href="javascript:checkstatus();">Check Status</a></li>
+	<li><a class="act" href="javascript:checkstatus();">About</a></li>
+	<li><a class="act auth" href="javascript:logout();">Log Out</a></li>
+
+</ul>
+
+<div id="resultframe">
+	no result.
+</div>
+
+<form id="login" onsubmit="processlogin();return false;">
+	<h2>Login</h2>
+	<label>Username<input type="text" id="loginusername"></label>
+	<label>Password<input type="password" id="loginpassword"></label>
+	<input type="submit" value="Log In">
+</form>
+
+<form id="register" onsubmit="processregister();return false;">
+	<h2>Register</h2>
+	<label>Username<input type="text" id="registerusername"></label>
+	<label>Email<input type="text" id="registeremail"></label>
+	<label>Password<input type="password" id="registerpassword"></label>
+	<label>Repeat Password<input type="password" id="registerpasswordconfirm"></label>
+	<input type="submit" value="Finish">
+</form>
+
+<form id="convert" method="post" target="hideframe" action="http://uclvrcore1.cloudapp.net/uclvr/upload/" enctype="multipart/form-data" onsubmit="changestatus=true;">
+	<input type="file" name="target" id="target" onchange="$('#upload').click();">
+	<input type="submit" id="upload" value="Upload">
+</form>
+
+<span id="authstatus" class="h">no</span>
+<div id="targetframe" class="h"></div>
+<iframe id="hideframe" name="hideframe"></iframe>
+
+</div>
 </body>
 </html>
